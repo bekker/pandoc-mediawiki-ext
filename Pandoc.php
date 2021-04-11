@@ -204,7 +204,7 @@ class PandocExtension
     protected static function isTranslationNecessary($parseSections)
     {
         foreach ($parseSections as $section) {
-            if ($section != 'mediawiki') {
+            if ($section['docType'] != 'mediawiki') {
                 return true;
             }
         }
