@@ -95,6 +95,13 @@ __TOC__
         $actual = PandocExtension::doParse($input);
         doAssert($actual, $expected);
     }
+
+    function testEditSection() {
+        $input = "abcd\n";
+        $expected = "abcd\n";
+        $actual = PandocExtension::doParse($input);
+        doAssert($actual, $expected);
+    }
 }
 
 function doAssert($actual, $expected){
