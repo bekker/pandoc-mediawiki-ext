@@ -30,7 +30,7 @@ $wgPandocExecutablePath = 'pandoc';
 $wgPandocExecutableOption = '--wrap=preserve';
 
 // Register hook
-$wgHooks['ParserBeforeInternalParse'][] = 'MarkdownExtension::onParserBeforeInternalParse';
+$wgHooks['ParserBeforeInternalParse'][] = 'PandocExtension::onParserBeforeInternalParse';
 
 class PandocExtension
 {
