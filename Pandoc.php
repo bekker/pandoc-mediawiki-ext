@@ -28,6 +28,7 @@ $wgPandocParseWordAlias = array(
 $wgPandocDisableEditSection = true;
 $wgPandocExecutablePath = 'pandoc';
 $wgPandocExecutableOption = '--wrap=preserve';
+$wgPandocReplaceImgTag = true;
 
 // Register hook
 $wgHooks['ParserBeforeInternalParse'][] = 'PandocExtension::onParserBeforeInternalParse';
@@ -60,12 +61,86 @@ class PandocExtension
             foreach ($parseSections as $section) {
                 $docType = $section['docType'];
                 $content = substr($text, $section['start'], $section['length']);
-                $newText .= static::translateUsingPandoc($docType, $content);
+                if ($docType != 'mediawiki') {
+                    $output = static::translateUsingPandoc($docType, $content);
+                    $output = static::doPostProcessing($output);
+                } else {
+                    $output = $content;
+                }
+                $newText .= $output;
             }
 
             return $newText;
         }
         return $text;
+    }
+
+    protected static function doPostProcessing($output) {
+        return static::replaceHtmlTagIfNecessary($output);
+    }
+
+    protected static function replaceHtmlTagIfNecessary($input) {
+        global $wgPandocReplaceImgTag;
+
+        $htmlTags = array();
+
+        if ($wgPandocReplaceImgTag) {
+            preg_match_all("/<img [^>]*src\s*=\"([^\"]*)\"[^>]*\/?>(?:<\/img[^>]*>)?/", $input, $matches, PREG_OFFSET_CAPTURE);
+            $count = count($matches[0]);
+            
+            for ($i = 0; $i < $count; $i++) {
+                $wholeMatch = $matches[0][$i];
+                $src = $matches[1][$i][0];
+
+                $htmlTags[] = array(
+                    'length' => strlen($wholeMatch[0]),
+                    'offset' => $wholeMatch[1],
+                    'tagName' => 'img',
+                    'src' => $src,
+                    'original' => $wholeMatch[0]
+                );
+            }
+        }
+
+        $count = count($htmlTags);
+
+        if ($count == 0) {
+            return $input;
+        }
+
+        $newText = substr($input, 0, $htmlTags[0]['offset']);
+
+        for ($i = 0; $i < $count; $i++) {
+            $htmlTag = $htmlTags[$i];
+
+            $tagName = $htmlTag['tagName'];
+            switch ($tagName) {
+                case 'img':
+                    $src = $htmlTag['src'];
+                    $isExternalLink = strncmp($src, "http://", 7) === 0 || strncmp($src, "https://", 8) === 0;
+                    if ($isExternalLink) {
+                        // See https://www.mediawiki.org/wiki/Manual:$wgAllowExternalImages
+                        $newText .= $src;
+                    } else {
+                        $converted = static::translateUsingPandoc('html', substr($input, $htmlTag['offset'], $htmlTag['length']));
+                        $trimmed = trim($converted);
+                        $newText .= $trimmed;
+                    }
+                    break;
+                default:
+                    $newText .= $original;
+            }
+            
+            $cursor = $htmlTag['offset'] + $htmlTag['length'];
+            if ($i < $count - 1) {
+                $nextHtmlTag = $htmlTags[$i + 1];
+                $newText .= substr($input, $cursor, $nextHtmlTag['offset'] - $cursor);
+            } else {
+                $newText .= substr($input, $cursor);
+            }
+        }
+
+        return $newText;
     }
 
     protected static function findParseSections($input) {

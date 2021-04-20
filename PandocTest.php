@@ -102,6 +102,48 @@ __TOC__
         $actual = PandocExtension::doParse($input);
         doAssert($actual, $expected);
     }
+
+    function testImgTagReplace1() {
+        $input = "{{MARKDOWN}}\n<img src=\"abcd.png\"/>\n\n- Blah Blah\n";
+        $expected = "__NOEDITSECTION__\n[[File:abcd.png]]\n\n* Blah Blah\n";
+        $actual = PandocExtension::doParse($input);
+        doAssert($actual, $expected);
+    }
+
+    function testImgTagReplace2() {
+        $input = "{{MARKDOWN}}\n<img src=\"abcd.png\">\n\n- Blah Blah\n";
+        $expected = "__NOEDITSECTION__\n[[File:abcd.png]]\n\n* Blah Blah\n";
+        $actual = PandocExtension::doParse($input);
+        doAssert($actual, $expected);
+    }
+
+    function testImgTagReplace3() {
+        $input = "{{MARKDOWN}}\n<img src=\"abcd.png\"></img>\n\n- Blah Blah\n";
+        $expected = "__NOEDITSECTION__\n[[File:abcd.png]]\n\n* Blah Blah\n";
+        $actual = PandocExtension::doParse($input);
+        doAssert($actual, $expected);
+    }
+
+    function testImgTagReplace4() {
+        $input = "{{MARKDOWN}}\n<img src=\"abcd.png\">\n<img src=\"abcd2.png\"></img>\n\n- Blah Blah\n";
+        $expected = "__NOEDITSECTION__\n[[File:abcd.png]]\n[[File:abcd2.png]]\n\n* Blah Blah\n";
+        $actual = PandocExtension::doParse($input);
+        doAssert($actual, $expected);
+    }
+
+    function testImgTagReplace__externalImage() {
+        $input = "{{MARKDOWN}}\n<img src=\"http://example.com/abcd.png\">\n<img src=\"abcd2.png\"></img>\n\n- Blah Blah\n";
+        $expected = "__NOEDITSECTION__\nhttp://example.com/abcd.png\n[[File:abcd2.png]]\n\n* Blah Blah\n";
+        $actual = PandocExtension::doParse($input);
+        doAssert($actual, $expected);
+    }
+
+    function testImgTagReplace__noConvertMediawiki() {
+        $input = "<img src=\"abcd.png\">\n<img src=\"abcd2.png\"></img>\n\n{{MARKDOWN}}- Blah Blah\n";
+        $expected = "__NOEDITSECTION__\n<img src=\"abcd.png\">\n<img src=\"abcd2.png\"></img>\n\n* Blah Blah\n";
+        $actual = PandocExtension::doParse($input);
+        doAssert($actual, $expected);
+    }
 }
 
 function doAssert($actual, $expected){
