@@ -95,8 +95,9 @@ Name | Default | Description
 `$wgPandocParseWordRegex` | `'/{{PARSEFROM:(\S*)}}\n?/'` | You can change the magic word regex.
 `$wgPandocParseWordAlias` | `array('{{MARKDOWN}}' => 'gfm', '{{WIKI}}' => 'mediawiki');` | You can add aliases for any specific format.
 `$wgPandocDisableEditSection` | `true` | By default, using any other format than `mediawiki` disables edit section functionality on the page. (`__NOEDITSECTION__` is added)
-`$wgPandocExecutablePath` | 'pandoc' | You can set arbitrary `pandoc` executable path. Change this when you can't access `pandoc` from the `$PATH`.
-`$wgPandocExecutableOption` | '--wrap=preserve' | You can set any options when executing `pandoc`.
+`$wgPandocExecutablePath` | `'pandoc'` | You can set arbitrary `pandoc` executable path. Change this when you can't access `pandoc` from the `$PATH`.
+`$wgPandocExecutableOption` | `'--wrap=preserve'` | You can set any options when executing `pandoc`.
+`$wgPandocReplaceImgTag` | `true` | Whether to replace `<img>` HTML tags or not.
 
 ### Example
 #### Use default
