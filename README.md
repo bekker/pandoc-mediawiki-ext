@@ -1,7 +1,9 @@
 # Pandoc Mediawiki Extension
 
 This is a Mediawiki Extension that translates other doc formats to Mediawiki __on runtime__.
+
 The main purpose of this extension is **to use Markdown semantics on Mediawiki pages!**
+
 `pandoc` must be installed and provided by `$PATH` env var to use this extension.
 
 ## Requirements
