@@ -144,14 +144,57 @@ __TOC__
         $actual = PandocExtension::doParse($input);
         doAssert($actual, $expected);
     }
+
+    function guessMarkdown() {
+        $input = "ByeBye\n\n## Hello world\n\nThis is guess test\n";
+        $expected = "__NOEDITSECTION__\nByeBye\n\n== Hello world ==\n\nThis is guess test\n";
+        $actual = PandocExtension::doParse($input);
+        doAssert($actual, $expected);
+    }
+
+    function guessMediawiki() {
+        $input = "== Hello ==\nasdfffds";
+        $expected = "== Hello ==\nasdfffds";
+        $actual = PandocExtension::doParse($input);
+        doAssert($actual, $expected);
+    }
+
+    function guessMediawiki__redirect() {
+        $input = "#redirect [[another page]]";
+        $expected = "#redirect [[another page]]";
+        $actual = PandocExtension::doParse($input);
+        doAssert($actual, $expected);
+    }
+
+    function guessMediawiki__redirect2() {
+        $input = "#Redirect [[another page]]";
+        $expected = "#Redirect [[another page]]";
+        $actual = PandocExtension::doParse($input);
+        doAssert($actual, $expected);
+    }
+
+    function guessMarkdown__andWikiAfterwards() {
+        $input = "## This is markdown\n{{WIKI}}\nByeBye\n## Hello world\nThis is guess test";
+        $expected = "__NOEDITSECTION__\n== This is markdown ==\nByeBye\n## Hello world\nThis is guess test";
+        $actual = PandocExtension::doParse($input);
+        doAssert($actual, $expected);
+    }
 }
 
 function doAssert($actual, $expected){
-    if ($actual !== $expected) {
+    // With recent version of pandoc, converting headers often result to additional span tags
+    // So ignore them!
+    if (is_string($actual)) {
+        $actual_replaced = preg_replace('/\n?<span id="\S*"><\/span>/', '', $actual);
+    } else {
+        $actual_replaced = $actual;
+    }
+    
+    if ($actual_replaced !== $expected) {
         echo "[expected]\n\n";
         print_r($expected);
         echo "\n\n[actual]\n\n";
-        print_r($actual);
+        print_r($actual_replaced);
         echo "\n\n";
     }
 }

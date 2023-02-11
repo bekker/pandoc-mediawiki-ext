@@ -1,7 +1,8 @@
 # Pandoc Mediawiki Extension
 
-This is a Mediawiki Extension that translates other doc formats to mediawiki __on runtime__.
-Pandoc must be installed to use this extension.
+This is a Mediawiki Extension that translates other doc formats to Mediawiki __on runtime__.
+The main purpose of this extension is **to use Markdown semantics on Mediawiki pages!**
+`pandoc` must be installed and provided by `$PATH` env var to use this extension.
 
 ## Requirements
 - `pandoc` must be installed on the server.
@@ -19,9 +20,15 @@ require_once("$IP/extensions/Pandoc/Pandoc.php");
 
 ## Usage
 
-### Declare `PARSEFROM` magic word
+### Default behavior
+- This extension tries to guess the format of a page.
+- For example, if Atx-style headers are found, the Markdown parser is applied.
+- If the guessed format is wrong (which is very likely at the current version) you can specify format by a magic word as described below.
+  - Or disable guessing by setting `$wgPandocEnableGuess` to `false`.
 
-- By default, this extension does nothing unless you add special magic word on the page.
+### Declare a magic word at the start of the page
+
+- You can specify which format you want to use.
 - Add `{{PARSEFROM:<pandoc format name>}}` on the page.
 - You can set default parsing format with `$wgPandocDefaultFormat` option. (See below)
 
@@ -42,7 +49,7 @@ require_once("$IP/extensions/Pandoc/Pandoc.php");
 
 ```
 
-### Switching between formats
+### Mix formats on the same page
 
 - You can add `{{PARSEFROM:<pandoc format name>}}` in the middle of the page.
 - You can add multiple `{{PARSEFROM:<pandoc format name>}}` on the page.
@@ -91,7 +98,8 @@ __TOC__
 
 Name | Default | Description
 ---- | ------- | -----------
-`$wgPandocDefaultFormat` | `'mediawiki'` | Default format. You can set any value `pandoc` allows.
+`$wgPandocDefaultFormat` | `'mediawiki'` | Default format. You can set any value `pandoc` allows.\nRegardless of this value, the extension tries to choose the right format if `$wgPandocEnableGuess` is enabled.
+`$wgPandocEnableGuess` | `true` | Whether to enable guess document format
 `$wgPandocParseWordRegex` | `'/{{PARSEFROM:(\S*)}}\n?/'` | You can change the magic word regex.
 `$wgPandocParseWordAlias` | `array('{{MARKDOWN}}' => 'gfm', '{{WIKI}}' => 'mediawiki');` | You can add aliases for any specific format.
 `$wgPandocDisableEditSection` | `true` | By default, using any other format than `mediawiki` disables edit section functionality on the page. (`__NOEDITSECTION__` is added)

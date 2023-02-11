@@ -12,7 +12,7 @@ if (!defined('MEDIAWIKI')) die();
 $wgExtensionCredits['parserhook'][] = array(
     'name'         => 'Pandoc',
     'description'  => 'Parse other doc formats to mediawiki format in runtime, using Pandoc',
-    'version'      => '0.2',
+    'version'      => '0.3',
     'author'       => 'Jang Ryeol',
     'url'          => 'https://github.com/bekker/pandoc-mediawiki-ext',
     'license-name' => 'MIT',
@@ -29,6 +29,7 @@ $wgPandocDisableEditSection = true;
 $wgPandocExecutablePath = 'pandoc';
 $wgPandocExecutableOption = '--wrap=preserve';
 $wgPandocReplaceImgTag = true;
+$wgPandocEnableGuess = true;
 
 // Register hook
 $wgHooks['ParserBeforeInternalParse'][] = 'PandocExtension::onParserBeforeInternalParse';
@@ -149,13 +150,28 @@ class PandocExtension
         $parseSections = array();
         $parseWords = static::findParseWords($input);
         $count = count($parseWords);
+
+        // If no parse words found
+        if ($count == 0) {
+            $start = 0;
+            $length = strlen($input);
+            $parseSections[] = array(
+                "docType" => static::guessDocType($input),
+                "start" => $start,
+                "length" => $length
+            );
+            return $parseSections;
+        }
         
         // Default section
         if ($count > 0 && $parseWords[0]['offset'] > 0) {
+            $start = 0;
+            $length = $parseWords[0]['offset'];
+            $content = substr($input, $start, $length);
             $parseSections[] = array(
-                "docType" => $wgPandocDefaultFormat,
-                "start" => 0,
-                "length" => $parseWords[0]['offset']
+                "docType" => static::guessDocType($content),
+                "start" => $start,
+                "length" => $length
             );
         }
         
@@ -276,6 +292,25 @@ class PandocExtension
         return $result;
     }
 
+    protected static function guessDocType($text) {
+        global $wgPandocEnableGuess;
+        global $wgPandocDefaultFormat;
+
+        if (!$wgPandocEnableGuess) {
+            return $wgPandocDefaultFormat;
+        }
+
+        if (preg_match("/^#redirect/i", $text)) {
+            return 'mediawiki';
+        }
+
+        if (preg_match("/(^#)|(\n#)|(^```)|(\n```)/", $text)) {
+            return 'gfm';
+        }
+
+        return $wgPandocDefaultFormat;
+    }
+
     protected static function isTranslationNecessary($parseSections)
     {
         foreach ($parseSections as $section) {
@@ -347,7 +382,7 @@ class PandocExtension
         $returnValue = proc_close($process);
 
         if ($returnValue != 0) {
-            throw new Exception("Pandoc executable exited with {$returnValue}. stderr:\n${stderr}");
+            throw new Exception("Pandoc executable exited with {$returnValue}. stderr:\n{$stderr}");
         }
 
         return $stdout;
