@@ -24,7 +24,7 @@ require_once("$IP/extensions/Pandoc/Pandoc.php");
 
 ### Default behavior
 - This extension tries to guess the format of a page.
-- For example, if Atx-style headers are found, the Markdown parser is applied.
+- For example, if Atx-style headers(headers using `#`) are found, the Markdown parser is applied.
 - If the guessed format is wrong (which is very likely at the current version) you can specify format by a magic word as described below.
   - Or disable guessing by setting `$wgPandocEnableGuess` to `false`.
 

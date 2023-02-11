@@ -12,7 +12,7 @@ if (!defined('MEDIAWIKI')) die();
 $wgExtensionCredits['parserhook'][] = array(
     'name'         => 'Pandoc',
     'description'  => 'Parse other doc formats to mediawiki format in runtime, using Pandoc',
-    'version'      => '0.3',
+    'version'      => '0.3.0',
     'author'       => 'Jang Ryeol',
     'url'          => 'https://github.com/bekker/pandoc-mediawiki-ext',
     'license-name' => 'MIT',
